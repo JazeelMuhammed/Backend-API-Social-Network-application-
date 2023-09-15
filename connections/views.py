@@ -48,7 +48,7 @@ class GetUsersConnectionsView(generics.ListAPIView):
         print('connection_ids', connection_ids)
         """Instead of doing Connection.objects.filter(Q(sender=first_user) | Q(receiver=first_user))
         and Connection.objects.filter(Q(sender=second_user) | Q(receiver=second_user)) and so on, we use a set{}"""
-        connections = Connection.objects.filter((Q(sender__in=connection_ids) | Q(receiver__in=connection_ids)) & Q(status=ConnectionStatus.accepted))
+        connections = Connection.objects.filter((Q(sender=self.request.user) | Q(receiver=self.request.user)) & Q(status=ConnectionStatus.accepted))
         return connections
 
 
@@ -63,7 +63,8 @@ class RemoveFromConnectionsUserView(generics.DestroyAPIView):
         user = request.user
         """deleting an user from connections, means we are deleting a connection instance from
         Connection model where target user is either sender or receiver"""
-        connection = Connection.objects.filter((Q(sender=target_user) & Q(receiver=user)) | (Q(sender=user) & Q(receiver=target_user)))
+        connection = Connection.objects.filter((Q(sender=target_user) & Q(receiver=user)) | (Q(sender=user) & Q(receiver=target_user))
+                                               & Q(status=ConnectionStatus.accepted))
         # if connection obj is not present, means if not a connection
         if not connection:
             raise NotFound('Not a connection yet')
@@ -127,8 +128,11 @@ class AcceptConnectionRequestView(generics.UpdateAPIView):
         print(is_requests_exists)
         if not is_requests_exists:
             raise PermissionDenied('Permission denied')
+
+        # To prevent 'QueryDict error is not mutable' error
         if isinstance(request.data, QueryDict):
             request.data._mutable = True
+        # if receiver is logged in user
         request.data['status'] = ConnectionStatus.accepted
         return super().update(request, *args, **kwargs)
 

@@ -25,7 +25,7 @@ class UserProfileListSerializer(serializers.ModelSerializer):
         read_only_fields = ('username', 'user_id',)
 
     def get_connections(self, obj):
-        connections = Connection.objects.filter(Q(sender=obj.user) | Q(receiver=obj.user))
+        connections = Connection.objects.filter((Q(sender=obj.user) | Q(receiver=obj.user)) & Q(status=ConnectionStatus.accepted))
         return connections.count()
 
     def get_followers(self, obj):
@@ -63,7 +63,7 @@ class GetUserProfileSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_connections(self, obj):
-        connections = Connection.objects.filter(Q(sender=obj.user) | Q(receiver=obj.user))
+        connections = Connection.objects.filter((Q(sender=obj.user) | Q(receiver=obj.user)) & Q(status=ConnectionStatus.accepted))
         serializer = ConnectionSerializer(connections, many=True)
         return serializer.data
 

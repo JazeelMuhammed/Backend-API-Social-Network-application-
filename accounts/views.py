@@ -33,6 +33,26 @@ class CreateUserProfileView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny, ]
 
 
+class SuggestedUsersView(generics.ListAPIView):
+    """get a list of suggested users"""
+    queryset = UserProfile.objects.all()
+    serializer_class = serializers.UserProfileListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        following = Follow.objects.filter(follower=self.request.user)
+        my_following = [obj.following for obj in following]
+        suggested_follow_objects = Follow.objects.filter(follower__in=my_following)
+        suggested_users = [obj.following for obj in suggested_follow_objects]
+        all_suggestions = UserProfile.objects.filter(user__in=suggested_users)
+        already_following = Follow.objects.filter(follower=self.request.user, following__in=suggested_users)
+        already_following_users = [obj.following for obj in already_following]
+        already_following_suggestions = UserProfile.objects.filter(user__in=already_following_users)
+        final_suggestions = all_suggestions.difference(already_following_suggestions)[:6]
+        print(final_suggestions)
+        return final_suggestions
+
+
 class FollowUnfollowUsersView(generics.CreateAPIView, mixins.DestroyModelMixin):
     # We are posting a follow request
     # Also deleting a follow request

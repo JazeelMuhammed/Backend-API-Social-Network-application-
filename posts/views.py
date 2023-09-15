@@ -15,6 +15,7 @@ from rest_framework import permissions
 class CreatePostView(generics.CreateAPIView):
     serializer_class = PostSerializer
     queryset = Post.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         # creating new post with user as requested user

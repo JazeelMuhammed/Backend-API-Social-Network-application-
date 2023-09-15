@@ -21,8 +21,8 @@ urlpatterns = [
     path('', views.PostListView.as_view(), name='show-all-posts'),
     path('<int:user_id>/', views.UserPostListView.as_view(), name='list-user-posts'),
 
-    # # url to get all posts of users who are followed by logged in user
-    # path('following/', views.UserFollowingPostListView.as_view(), name='following-users-posts'),
-    # # url to get all posts of users who are connected with logged in user
-    # path('connections/', views.ConnectedUsersPostListView.as_view(), name='connected-users-posts'),
+    # url to get all posts of users who are followed by logged in user
+    path('following/', views.UserFollowingPostListView.as_view(), name='following-users-posts'),
+    # url to get all posts of users who are connected with logged in user
+    path('connections/', views.ConnectedUsersPostListView.as_view(), name='connected-users-posts'),
 ]

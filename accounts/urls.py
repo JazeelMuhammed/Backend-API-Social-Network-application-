@@ -14,5 +14,7 @@ urlpatterns = [
     path('following/', views.GetUserFollowingView.as_view(), name='user-following-view'),
 
     # connection urls
-    path('connections/', include('connections.urls'))
+    path('connections/', include('connections.urls')),
+
+    path('suggested/', views.SuggestedUsersView.as_view(), name='suggested-users'),
 ]
