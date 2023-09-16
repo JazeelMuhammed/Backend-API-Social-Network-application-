@@ -19,5 +19,12 @@ from . import views
 
 urlpatterns = [
     path('', views.CreatePostView.as_view(), name='create-new-post'),
-    path('<int:pk>/', views.GetUpdateDeletePostView.as_view(), name='post-detail-view')
+    path('<int:pk>/', views.GetUpdateDeletePostView.as_view(), name='post-detail-view'),
+
+    # Like or unlike posts
+    path('like/<int:pk>/', views.LikeOrUnlikePostView.as_view(), name='like-unlike-posts'),
+
+    # comment or Uncomment posts
+    path('comment/<int:pk>/', views.CreateCommentView.as_view(), name='comment-post'),
+    path('comment/delete/<int:pk>/', views.DeleteCommentView.as_view(), name='delete-comment')
 ]

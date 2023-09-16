@@ -19,10 +19,14 @@ from . import views
 
 urlpatterns = [
     path('', views.PostListView.as_view(), name='show-all-posts'),
-    path('<int:user_id>/', views.UserPostListView.as_view(), name='list-user-posts'),
+    path('<int:user_id>/', views.UserPostListView.as_view(), name='specific-user-posts'),
+    path('me/', views.OwnPostListView.as_view(), name='my-posts'),
 
     # url to get all posts of users who are followed by logged in user
     path('following/', views.UserFollowingPostListView.as_view(), name='following-users-posts'),
     # url to get all posts of users who are connected with logged in user
     path('connections/', views.ConnectedUsersPostListView.as_view(), name='connected-users-posts'),
+
+    # user liked posts
+    path('likedPosts/', views.UserLikedPostsView.as_view(), name='user-liked-posts'),
 ]

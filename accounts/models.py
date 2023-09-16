@@ -28,6 +28,7 @@ class UserProfile(models.Model):
     bio = models.CharField(max_length=100, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     profile_picture = models.ImageField(upload_to="profile-pictures", null=True, blank=True)
+    private = models.BooleanField(default=False)
 
     def get_user_id(self):
         return self.user.pk
@@ -37,6 +38,9 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username + ' profile'
+
+    def delete_user(self):
+        self.user.delete()
 
 
 class Follow(models.Model):

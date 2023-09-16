@@ -16,12 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts.views import GetOrUpdatePrivateUserData
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/feed/', include('feed.urls')),
     path('api/post/', include('posts.urls')),
     path('api/users/', include('accounts.urls')),
+
+    path('api/me/', GetOrUpdatePrivateUserData.as_view(), name='me'),
 
     path('api-auth', include('rest_framework.urls')),
 

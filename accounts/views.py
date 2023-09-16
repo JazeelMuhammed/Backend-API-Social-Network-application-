@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, permissions, status, mixins
 from rest_framework.exceptions import PermissionDenied
@@ -6,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import serializers
-from .models import UserProfile, Follow
+from .models import UserProfile, Follow, Connection, ConnectionStatus
 from utils.permissions import IsOwnerOrReadOnly
 
 User = get_user_model()
@@ -20,11 +21,39 @@ class UserProfileListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class GetUserProfileView(generics.RetrieveUpdateDestroyAPIView):
+class GetUserProfileView(generics.RetrieveAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = serializers.GetUserProfileSerializer
     lookup_field = 'user_id'
     permission_classes = [IsOwnerOrReadOnly, ]
+
+    def retrieve(self, request, *args, **kwargs):
+        auth_user = self.request.user
+        target_user = self.kwargs.get('user_id')
+        instance = self.get_object()
+
+        if instance.private == True:
+            is_connected = Connection.objects.filter(((Q(sender=auth_user) & Q(receiver=target_user)) & Q(status=ConnectionStatus)) |
+                                                   ((Q(sender=target_user) & Q(receiver=auth_user)) & Q(status=ConnectionStatus))).exists()
+            if is_connected:
+                instance = self.get_object()
+                serializer = self.get_serializer(instance)
+                return Response(serializer.data)
+            else:
+                raise PermissionDenied('Private profile')
+        else:
+            instance = self.get_object()
+            serializer = serializers.GetUserProfileSerializer(instance)
+            return Response(serializer.data)
+
+
+class GetOrUpdatePrivateUserData(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = serializers.MyProfileSerializer
+    queryset = UserProfile.objects.all()
+
+    def get_queryset(self):
+        self.kwargs['pk'] = self.request.user.id
+        return self.queryset
 
 
 class CreateUserProfileView(generics.CreateAPIView):

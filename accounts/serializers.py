@@ -4,6 +4,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from .models import UserProfile, Follow, Connection, ConnectionStatus
+from drf_writable_nested import WritableNestedModelSerializer
 
 User = get_user_model()
 
@@ -37,6 +38,29 @@ class UserProfileListSerializer(serializers.ModelSerializer):
         return following.count()
 
 
+class PrivateUserSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ('username', 'profile_picture', 'bio')
+
+    def get_username(self, obj):
+        return obj.user.username
+
+
+class MyProfileSerializer(WritableNestedModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ('id', 'username', 'first_name', 'last_name', 'bio', 'location', 'private', )
+        read_only_fields = ('username', 'user_id',)
+
+    def get_username(self, obj):
+        return obj.user.username
+
+
 class GetUserProfileSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
@@ -45,7 +69,7 @@ class GetUserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['username', 'followers', 'following', 'connections', 'first_name', 'last_name', 'location', 'bio', 'profile_picture']
+        fields = ['username', 'followers', 'following', 'connections', 'first_name', 'last_name', 'location', 'bio', 'profile_picture', 'private',]
 
     def get_username(self, obj):
         return obj.user.username

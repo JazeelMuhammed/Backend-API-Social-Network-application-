@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
-from .serializers import PostSerializer
-from .models import Post
+from .serializers import PostSerializer, LikeSerializer
+from .models import Post, Like
 from accounts.models import Follow
 from connections.views import all_user_related_connection_instances
 
@@ -17,13 +17,33 @@ class PostListView(generics.ListAPIView):
 
 class UserPostListView(generics.ListAPIView):
     """returns list of specific users post"""
-    serializer_class = PostSerializer
     queryset = Post.objects.all()
+    serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         posts = self.queryset.filter(user__id=self.kwargs.get('user_id'))
         return posts.order_by('-created')
+
+
+class OwnPostListView(generics.ListAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        posts = self.queryset.filter(user=self.request.user)
+        return posts.order_by('-created')
+
+
+class UserLikedPostsView(generics.ListAPIView):
+    """returns list of all posts user liked"""
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    def get_queryset(self):
+        """get a list of all posts logged in user liked"""
+        qs = super().get_queryset()
+        return qs.filter(user=self.request.user)
 
 
 class UserFollowingPostListView(generics.ListAPIView):
@@ -54,4 +74,6 @@ class ConnectedUsersPostListView(generics.ListAPIView):
         # multi-filtering Post models based on many connected users
         posts = Post.objects.filter(user__in=connected_user_list)
         return posts.order_by('-created')
+
+
 

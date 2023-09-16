@@ -36,18 +36,18 @@ def all_user_related_connection_instances(user):
     return connected_users_set
 
 
-# View to get list of all connections of logged in user
 class GetUsersConnectionsView(generics.ListAPIView):
+    """returns list of Connection objects where logged in user is either sender or receiver"""
     queryset = Connection.objects.all()
     serializer_class = ConnectionSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """returns set of logged in users_id who are either sender or receiver"""
-        connection_ids = all_user_related_connection_instances(self.request.user)
-        print('connection_ids', connection_ids)
-        """Instead of doing Connection.objects.filter(Q(sender=first_user) | Q(receiver=first_user))
-        and Connection.objects.filter(Q(sender=second_user) | Q(receiver=second_user)) and so on, we use a set{}"""
+        # """returns set of connected users_id who are either sender or receiver to the logged in user"""
+        # connection_ids = all_user_related_connection_instances(self.request.user)
+        # print('connection_ids', connection_ids)
+        # """Instead of doing Connection.objects.filter(Q(sender=first_user) | Q(receiver=first_user))
+        # and Connection.objects.filter(Q(sender=second_user) | Q(receiver=second_user)) and so on, we use a set{}"""
         connections = Connection.objects.filter((Q(sender=self.request.user) | Q(receiver=self.request.user)) & Q(status=ConnectionStatus.accepted))
         return connections
 
